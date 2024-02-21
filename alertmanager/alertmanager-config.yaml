@@ -1,0 +1,1602 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  name: alertmanager-custom
+  namespace: openshift-user-workload-monitoring
+type: Opaque
+stringData:
+  alertmanager.yaml: |
+global:
+  # NOTE: replace with your slack application URL
+  slack_api_url: "https://hooks.slack.com/services/XXXXXXXXXXX/XXXXXXXXXX/XXXXXXXXXXXXXXXXXXXXXXX"
+route:
+  receiver: "null"
+  group_by:
+  - job
+  routes:
+  - receiver: "null"
+    group_by:
+    - alertname
+    - severity
+    continue: true
+    routes:
+    - receiver: slack
+      match:
+        alertname: MachineWithoutValidNode
+        namespace: openshift-machine-api
+      match_re:
+        name: ^.+-master-[123]$
+    - receiver: slack
+      match:
+        alertname: MachineWithNoRunningPhase
+        namespace: openshift-machine-api
+      match_re:
+        name: ^.+-master-[123]$
+    - receiver: "null"
+      match:
+        alertname: CannotRetrieveUpdates
+    - receiver: "null"
+      match:
+        send_managed_notification: "true"
+    - receiver: "null"
+      match:
+        alertname: KubeQuotaExceeded
+    - receiver: "null"
+      match:
+        alertname: KubeQuotaFullyUsed
+    - receiver: "null"
+      match:
+        alertname: CPUThrottlingHigh
+    - receiver: "null"
+      match:
+        alertname: NodeFilesystemSpaceFillingUp
+    - receiver: "null"
+      match:
+        alertname: NodeFileDescriptorLimit
+    - receiver: "null"
+      match:
+        namespace: openshift-customer-monitoring
+    - receiver: "null"
+      match:
+        namespace: openshift-operators
+    - receiver: "null"
+      match:
+        namespace: openshift-storage
+    - receiver: "null"
+      match:
+        namespace: openshift-compliance
+    - receiver: "null"
+      match:
+        exported_namespace: openshift-storage
+    - receiver: "null"
+      match:
+        exported_namespace: openshift-operators
+    - receiver: "null"
+      match:
+        namespace: openshift-operators-redhat
+    - receiver: "null"
+      match:
+        alertname: CustomResourceDetected
+    - receiver: "null"
+      match:
+        alertname: ImagePruningDisabled
+    - receiver: "null"
+      match:
+        severity: info
+    - receiver: "null"
+      match:
+        alertname: KubePersistentVolumeFillingUp
+        namespace: openshift-logging
+    - receiver: "null"
+      match:
+        alertname: PodDisruptionBudgetLimit
+      match_re:
+        namespace: ^redhat-.*
+    - receiver: "null"
+      match:
+        alertname: PodDisruptionBudgetAtLimit
+      match_re:
+        namespace: ^redhat-.*
+    - receiver: "null"
+      match:
+        alertname: TargetDown
+      match_re:
+        namespace: ^redhat-.*
+    - receiver: "null"
+      match:
+        alertname: KubeJobFailed
+    - receiver: slack
+      match:
+        namespace: openshift-logging
+      match_re:
+        alertname: ^.*SRE$
+    - receiver: "null"
+      match:
+        alertname: FluentDHighErrorRate
+        namespace: openshift-logging
+    - receiver: "null"
+      match:
+        alertname: FluentDVeryHighErrorRate
+        namespace: openshift-logging
+    - receiver: "null"
+      match:
+        alertname: FluentdNodeDown
+        namespace: openshift-logging
+    - receiver: "null"
+      match:
+        alertname: FluentdNodeDown
+        prometheus: openshift-user-workload-monitoring/custom
+    - receiver: "null"
+      match:
+        alertname: FluentdQueueLengthIncreasing
+        namespace: openshift-logging
+    - receiver: "null"
+      match:
+        alertname: AggregatedLoggingSystemCPUHigh
+        namespace: openshift-logging
+    - receiver: "null"
+      match:
+        alertname: ElasticsearchClusterNotHealthy
+        namespace: openshift-logging
+    - receiver: "null"
+      match:
+        alertname: ElasticsearchDiskSpaceRunningLow
+        namespace: openshift-logging
+    - receiver: "null"
+      match:
+        alertname: ElasticsearchHighFileDescriptorUsage
+        namespace: openshift-logging
+    - receiver: "null"
+      match:
+        alertname: ElasticsearchJVMHeapUseHigh
+        namespace: openshift-logging
+    - receiver: "null"
+      match:
+        alertname: ElasticsearchNodeDiskWatermarkReached
+        namespace: openshift-logging
+    - receiver: "null"
+      match:
+        alertname: ElasticsearchOperatorCSVNotSuccessful
+        namespace: openshift-logging
+    - receiver: "null"
+      match:
+        alertname: ElasticsearchProcessCPUHigh
+        namespace: openshift-logging
+    - receiver: "null"
+      match:
+        alertname: ElasticsearchWriteRequestsRejectionJumps
+        namespace: openshift-logging
+    - receiver: "null"
+      match:
+        alertname: CollectorNodeDown
+        namespace: openshift-logging
+    - receiver: "null"
+      match:
+        alertname: CollectorHighErrorRate
+        namespace: openshift-logging
+    - receiver: "null"
+      match:
+        alertname: CollectorVeryHighErrorRate
+        namespace: openshift-logging
+    - receiver: "null"
+      match:
+        alertname: LokiRequestErrors
+        namespace: openshift-logging
+    - receiver: "null"
+      match:
+        alertname: LokiStackWriteRequestErrors
+        namespace: openshift-logging
+    - receiver: "null"
+      match:
+        alertname: LokiStackReadRequestErrors
+        namespace: openshift-logging
+    - receiver: "null"
+      match:
+        alertname: LokiRequestPanics
+        namespace: openshift-logging
+    - receiver: "null"
+      match:
+        alertname: LokiRequestLatency
+        namespace: openshift-logging
+    - receiver: "null"
+      match:
+        alertname: LokiTenantRateLimit
+        namespace: openshift-logging
+    - receiver: "null"
+      match:
+        alertname: LokiStorageSlowWrite
+        namespace: openshift-logging
+    - receiver: "null"
+      match:
+        alertname: LokiStorageSlowRead
+        namespace: openshift-logging
+    - receiver: "null"
+      match:
+        alertname: LokiWritePathHighLoad
+        namespace: openshift-logging
+    - receiver: "null"
+      match:
+        alertname: LokiReadPathHighLoad
+        namespace: openshift-logging
+    - receiver: "null"
+      match:
+        alertname: HAProxyReloadFail
+        severity: critical
+    - receiver: "null"
+      match:
+        alertname: PrometheusRuleFailures
+    - receiver: "null"
+      match:
+        alertname: ClusterOperatorDegraded
+        name: authentication
+        reason: IdentityProviderConfig_Error
+    - receiver: "null"
+      match:
+        alertname: ClusterOperatorDegraded
+        name: authentication
+        reason: OAuthServerConfigObservation_Error
+    - receiver: "null"
+      match:
+        alertname: ClusterOperatorDown
+        name: authentication
+        reason: IdentityProviderConfig_Error
+    - receiver: "null"
+      match:
+        alertname: ClusterOperatorDown
+        name: authentication
+        reason: OAuthServerConfigObservation_Error
+    - receiver: "null"
+      match:
+        alertname: PrometheusNotIngestingSamples
+        namespace: openshift-user-workload-monitoring
+    - receiver: "null"
+      match:
+        alertname: FluentdQueueLengthBurst
+        namespace: openshift-logging
+        severity: warning
+    - receiver: "null"
+      match:
+        alertname: ClusterAutoscalerUnschedulablePods
+        namespace: openshift-machine-api
+    - receiver: "null"
+      match:
+        severity: alert
+    - receiver: "null"
+      match:
+        alertname: PrometheusBadConfig
+        namespace: openshift-user-workload-monitoring
+    - receiver: "null"
+      match:
+        alertname: PrometheusDuplicateTimestamps
+        namespace: openshift-user-workload-monitoring
+    - receiver: "null"
+      match:
+        alertname: PrometheusTargetSyncFailure
+        namespace: openshift-user-workload-monitoring
+    - receiver: "null"
+      match:
+        alertname: PrometheusOperatorRejectedResources
+        namespace: openshift-user-workload-monitoring
+    - receiver: "null"
+      match:
+        alertname: MultipleDefaultStorageClasses
+        namespace: openshift-cluster-storage-operator
+    - receiver: "null"
+      match:
+        alertname: NodeFilesystemAlmostOutOfSpace
+        severity: critical
+      match_re:
+        mountpoint: /var/lib/ibmc-s3fs.*
+    - receiver: slack
+      match:
+        alertname: KubeAPILatencyHigh
+        severity: critical
+    - receiver: slack
+      match:
+        alertname: etcdGRPCRequestsSlow
+        namespace: openshift-etcd
+    - receiver: slack
+      match:
+        alertname: ExtremelyHighIndividualControlPlaneCPU
+        namespace: openshift-kube-apiserver
+    - receiver: slack
+      match:
+        alertname: etcdHighNumberOfFailedGRPCRequests
+        namespace: openshift-etcd
+    - receiver: slack
+      match:
+        namespace: openshift-deployment-validation-operator
+        severity: critical
+    - receiver: slack
+      match:
+        alertname: NodeClockNotSynchronising
+        prometheus: openshift-user-workload-monitoring/custom
+    - receiver: slack
+      match:
+        job: fluentd
+        prometheus: openshift-user-workload-monitoring/custom
+    - receiver: slack
+      match:
+        cluster: elasticsearch
+        prometheus: openshift-user-workload-monitoring/custom
+    - receiver: "null"
+      match:
+        alertname: KubeAPIErrorBudgetBurn
+        prometheus: openshift-user-workload-monitoring/custom
+    - receiver: "null"
+      match:
+        alertname: HAProxyDown
+    - receiver: "null"
+      match:
+        alertname: CertificateIsAboutToExpire
+    - receiver: "null"
+      match:
+        alertname: ClusterOperatorDown
+        name: insights
+    - receiver: slack
+      match:
+        prometheus: openshift-user-workload-monitoring/custom
+      match_re:
+        exported_namespace: ^dedicated-admin$
+    - receiver: slack
+      match:
+        exported_namespace: ""
+        prometheus: openshift-user-workload-monitoring/custom
+      match_re:
+        namespace: ^dedicated-admin$
+    - receiver: slack
+      match:
+        prometheus: openshift-user-workload-monitoring/custom
+      match_re:
+        exported_namespace: ^openshift-addon-operator$
+    - receiver: slack
+      match:
+        exported_namespace: ""
+        prometheus: openshift-user-workload-monitoring/custom
+      match_re:
+        namespace: ^openshift-addon-operator$
+    - receiver: slack
+      match:
+        prometheus: openshift-user-workload-monitoring/custom
+      match_re:
+        exported_namespace: ^openshift-aqua$
+    - receiver: slack
+      match:
+        exported_namespace: ""
+        prometheus: openshift-user-workload-monitoring/custom
+      match_re:
+        namespace: ^openshift-aqua$
+    - receiver: slack
+      match:
+        prometheus: openshift-user-workload-monitoring/custom
+      match_re:
+        exported_namespace: ^openshift-aws-vpce-operator$
+    - receiver: slack
+      match:
+        exported_namespace: ""
+        prometheus: openshift-user-workload-monitoring/custom
+      match_re:
+        namespace: ^openshift-aws-vpce-operator$
+    - receiver: slack
+      match:
+        prometheus: openshift-user-workload-monitoring/custom
+      match_re:
+        exported_namespace: ^openshift-backplane$
+    - receiver: slack
+      match:
+        exported_namespace: ""
+        prometheus: openshift-user-workload-monitoring/custom
+      match_re:
+        namespace: ^openshift-backplane$
+    - receiver: slack
+      match:
+        prometheus: openshift-user-workload-monitoring/custom
+      match_re:
+        exported_namespace: ^openshift-backplane-cee$
+    - receiver: slack
+      match:
+        exported_namespace: ""
+        prometheus: openshift-user-workload-monitoring/custom
+      match_re:
+        namespace: ^openshift-backplane-cee$
+    - receiver: slack
+      match:
+        prometheus: openshift-user-workload-monitoring/custom
+      match_re:
+        exported_namespace: ^openshift-backplane-csa$
+    - receiver: slack
+      match:
+        exported_namespace: ""
+        prometheus: openshift-user-workload-monitoring/custom
+      match_re:
+        namespace: ^openshift-backplane-csa$
+    - receiver: slack
+      match:
+        prometheus: openshift-user-workload-monitoring/custom
+      match_re:
+        exported_namespace: ^openshift-backplane-cse$
+    - receiver: slack
+      match:
+        exported_namespace: ""
+        prometheus: openshift-user-workload-monitoring/custom
+      match_re:
+        namespace: ^openshift-backplane-cse$
+    - receiver: slack
+      match:
+        prometheus: openshift-user-workload-monitoring/custom
+      match_re:
+        exported_namespace: ^openshift-backplane-csm$
+    - receiver: slack
+      match:
+        exported_namespace: ""
+        prometheus: openshift-user-workload-monitoring/custom
+      match_re:
+        namespace: ^openshift-backplane-csm$
+    - receiver: slack
+      match:
+        prometheus: openshift-user-workload-monitoring/custom
+      match_re:
+        exported_namespace: ^openshift-backplane-managed-scripts$
+    - receiver: slack
+      match:
+        exported_namespace: ""
+        prometheus: openshift-user-workload-monitoring/custom
+      match_re:
+        namespace: ^openshift-backplane-managed-scripts$
+    - receiver: slack
+      match:
+        prometheus: openshift-user-workload-monitoring/custom
+      match_re:
+        exported_namespace: ^openshift-backplane-mobb$
+    - receiver: slack
+      match:
+        exported_namespace: ""
+        prometheus: openshift-user-workload-monitoring/custom
+      match_re:
+        namespace: ^openshift-backplane-mobb$
+    - receiver: slack
+      match:
+        prometheus: openshift-user-workload-monitoring/custom
+      match_re:
+        exported_namespace: ^openshift-backplane-srep$
+    - receiver: slack
+      match:
+        exported_namespace: ""
+        prometheus: openshift-user-workload-monitoring/custom
+      match_re:
+        namespace: ^openshift-backplane-srep$
+    - receiver: slack
+      match:
+        prometheus: openshift-user-workload-monitoring/custom
+      match_re:
+        exported_namespace: ^openshift-backplane-tam$
+    - receiver: slack
+      match:
+        exported_namespace: ""
+        prometheus: openshift-user-workload-monitoring/custom
+      match_re:
+        namespace: ^openshift-backplane-tam$
+    - receiver: slack
+      match:
+        prometheus: openshift-user-workload-monitoring/custom
+      match_re:
+        exported_namespace: ^openshift-cloud-ingress-operator$
+    - receiver: slack
+      match:
+        exported_namespace: ""
+        prometheus: openshift-user-workload-monitoring/custom
+      match_re:
+        namespace: ^openshift-cloud-ingress-operator$
+    - receiver: slack
+      match:
+        prometheus: openshift-user-workload-monitoring/custom
+      match_re:
+        exported_namespace: ^openshift-codeready-workspaces$
+    - receiver: slack
+      match:
+        exported_namespace: ""
+        prometheus: openshift-user-workload-monitoring/custom
+      match_re:
+        namespace: ^openshift-codeready-workspaces$
+    - receiver: slack
+      match:
+        prometheus: openshift-user-workload-monitoring/custom
+      match_re:
+        exported_namespace: ^openshift-compliance$
+    - receiver: slack
+      match:
+        exported_namespace: ""
+        prometheus: openshift-user-workload-monitoring/custom
+      match_re:
+        namespace: ^openshift-compliance$
+    - receiver: slack
+      match:
+        prometheus: openshift-user-workload-monitoring/custom
+      match_re:
+        exported_namespace: ^openshift-compliance-monkey$
+    - receiver: slack
+      match:
+        exported_namespace: ""
+        prometheus: openshift-user-workload-monitoring/custom
+      match_re:
+        namespace: ^openshift-compliance-monkey$
+    - receiver: slack
+      match:
+        prometheus: openshift-user-workload-monitoring/custom
+      match_re:
+        exported_namespace: ^openshift-container-security$
+    - receiver: slack
+      match:
+        exported_namespace: ""
+        prometheus: openshift-user-workload-monitoring/custom
+      match_re:
+        namespace: ^openshift-container-security$
+    - receiver: slack
+      match:
+        prometheus: openshift-user-workload-monitoring/custom
+      match_re:
+        exported_namespace: ^openshift-custom-domains-operator$
+    - receiver: slack
+      match:
+        exported_namespace: ""
+        prometheus: openshift-user-workload-monitoring/custom
+      match_re:
+        namespace: ^openshift-custom-domains-operator$
+    - receiver: slack
+      match:
+        prometheus: openshift-user-workload-monitoring/custom
+      match_re:
+        exported_namespace: ^openshift-customer-monitoring$
+    - receiver: slack
+      match:
+        exported_namespace: ""
+        prometheus: openshift-user-workload-monitoring/custom
+      match_re:
+        namespace: ^openshift-customer-monitoring$
+    - receiver: slack
+      match:
+        prometheus: openshift-user-workload-monitoring/custom
+      match_re:
+        exported_namespace: ^openshift-deployment-validation-operator$
+    - receiver: slack
+      match:
+        exported_namespace: ""
+        prometheus: openshift-user-workload-monitoring/custom
+      match_re:
+        namespace: ^openshift-deployment-validation-operator$
+    - receiver: slack
+      match:
+        prometheus: openshift-user-workload-monitoring/custom
+      match_re:
+        exported_namespace: ^openshift-managed-node-metadata-operator$
+    - receiver: slack
+      match:
+        exported_namespace: ""
+        prometheus: openshift-user-workload-monitoring/custom
+      match_re:
+        namespace: ^openshift-managed-node-metadata-operator$
+    - receiver: slack
+      match:
+        prometheus: openshift-user-workload-monitoring/custom
+      match_re:
+        exported_namespace: ^openshift-file-integrity$
+    - receiver: slack
+      match:
+        exported_namespace: ""
+        prometheus: openshift-user-workload-monitoring/custom
+      match_re:
+        namespace: ^openshift-file-integrity$
+    - receiver: slack
+      match:
+        prometheus: openshift-user-workload-monitoring/custom
+      match_re:
+        exported_namespace: ^openshift-logging$
+    - receiver: slack
+      match:
+        exported_namespace: ""
+        prometheus: openshift-user-workload-monitoring/custom
+      match_re:
+        namespace: ^openshift-logging$
+    - receiver: slack
+      match:
+        prometheus: openshift-user-workload-monitoring/custom
+      match_re:
+        exported_namespace: ^openshift-managed-upgrade-operator$
+    - receiver: slack
+      match:
+        exported_namespace: ""
+        prometheus: openshift-user-workload-monitoring/custom
+      match_re:
+        namespace: ^openshift-managed-upgrade-operator$
+    - receiver: slack
+      match:
+        prometheus: openshift-user-workload-monitoring/custom
+      match_re:
+        exported_namespace: ^openshift-must-gather-operator$
+    - receiver: slack
+      match:
+        exported_namespace: ""
+        prometheus: openshift-user-workload-monitoring/custom
+      match_re:
+        namespace: ^openshift-must-gather-operator$
+    - receiver: slack
+      match:
+        prometheus: openshift-user-workload-monitoring/custom
+      match_re:
+        exported_namespace: ^openshift-observability-operator$
+    - receiver: slack
+      match:
+        exported_namespace: ""
+        prometheus: openshift-user-workload-monitoring/custom
+      match_re:
+        namespace: ^openshift-observability-operator$
+    - receiver: slack
+      match:
+        prometheus: openshift-user-workload-monitoring/custom
+      match_re:
+        exported_namespace: ^openshift-ocm-agent-operator$
+    - receiver: slack
+      match:
+        exported_namespace: ""
+        prometheus: openshift-user-workload-monitoring/custom
+      match_re:
+        namespace: ^openshift-ocm-agent-operator$
+    - receiver: slack
+      match:
+        prometheus: openshift-user-workload-monitoring/custom
+      match_re:
+        exported_namespace: ^openshift-operators-redhat$
+    - receiver: slack
+      match:
+        exported_namespace: ""
+        prometheus: openshift-user-workload-monitoring/custom
+      match_re:
+        namespace: ^openshift-operators-redhat$
+    - receiver: slack
+      match:
+        prometheus: openshift-user-workload-monitoring/custom
+      match_re:
+        exported_namespace: ^openshift-osd-metrics$
+    - receiver: slack
+      match:
+        exported_namespace: ""
+        prometheus: openshift-user-workload-monitoring/custom
+      match_re:
+        namespace: ^openshift-osd-metrics$
+    - receiver: slack
+      match:
+        prometheus: openshift-user-workload-monitoring/custom
+      match_re:
+        exported_namespace: ^openshift-rbac-permissions$
+    - receiver: slack
+      match:
+        exported_namespace: ""
+        prometheus: openshift-user-workload-monitoring/custom
+      match_re:
+        namespace: ^openshift-rbac-permissions$
+    - receiver: slack
+      match:
+        prometheus: openshift-user-workload-monitoring/custom
+      match_re:
+        exported_namespace: ^openshift-route-monitor-operator$
+    - receiver: slack
+      match:
+        exported_namespace: ""
+        prometheus: openshift-user-workload-monitoring/custom
+      match_re:
+        namespace: ^openshift-route-monitor-operator$
+    - receiver: slack
+      match:
+        prometheus: openshift-user-workload-monitoring/custom
+      match_re:
+        exported_namespace: ^openshift-scanning$
+    - receiver: slack
+      match:
+        exported_namespace: ""
+        prometheus: openshift-user-workload-monitoring/custom
+      match_re:
+        namespace: ^openshift-scanning$
+    - receiver: slack
+      match:
+        prometheus: openshift-user-workload-monitoring/custom
+      match_re:
+        exported_namespace: ^openshift-security$
+    - receiver: slack
+      match:
+        exported_namespace: ""
+        prometheus: openshift-user-workload-monitoring/custom
+      match_re:
+        namespace: ^openshift-security$
+    - receiver: slack
+      match:
+        prometheus: openshift-user-workload-monitoring/custom
+      match_re:
+        exported_namespace: ^openshift-splunk-forwarder-operator$
+    - receiver: slack
+      match:
+        exported_namespace: ""
+        prometheus: openshift-user-workload-monitoring/custom
+      match_re:
+        namespace: ^openshift-splunk-forwarder-operator$
+    - receiver: slack
+      match:
+        prometheus: openshift-user-workload-monitoring/custom
+      match_re:
+        exported_namespace: ^openshift-sre-pruning$
+    - receiver: slack
+      match:
+        exported_namespace: ""
+        prometheus: openshift-user-workload-monitoring/custom
+      match_re:
+        namespace: ^openshift-sre-pruning$
+    - receiver: slack
+      match:
+        prometheus: openshift-user-workload-monitoring/custom
+      match_re:
+        exported_namespace: ^openshift-strimzi$
+    - receiver: slack
+      match:
+        exported_namespace: ""
+        prometheus: openshift-user-workload-monitoring/custom
+      match_re:
+        namespace: ^openshift-strimzi$
+    - receiver: slack
+      match:
+        prometheus: openshift-user-workload-monitoring/custom
+      match_re:
+        exported_namespace: ^openshift-suricata$
+    - receiver: slack
+      match:
+        exported_namespace: ""
+        prometheus: openshift-user-workload-monitoring/custom
+      match_re:
+        namespace: ^openshift-suricata$
+    - receiver: slack
+      match:
+        prometheus: openshift-user-workload-monitoring/custom
+      match_re:
+        exported_namespace: ^openshift-validation-webhook$
+    - receiver: slack
+      match:
+        exported_namespace: ""
+        prometheus: openshift-user-workload-monitoring/custom
+      match_re:
+        namespace: ^openshift-validation-webhook$
+    - receiver: slack
+      match:
+        prometheus: openshift-user-workload-monitoring/custom
+      match_re:
+        exported_namespace: ^openshift-velero$
+    - receiver: slack
+      match:
+        exported_namespace: ""
+        prometheus: openshift-user-workload-monitoring/custom
+      match_re:
+        namespace: ^openshift-velero$
+    - receiver: slack
+      match:
+        prometheus: openshift-user-workload-monitoring/custom
+      match_re:
+        exported_namespace: ^openshift-monitoring$
+    - receiver: slack
+      match:
+        exported_namespace: ""
+        prometheus: openshift-user-workload-monitoring/custom
+      match_re:
+        namespace: ^openshift-monitoring$
+    - receiver: slack
+      match:
+        prometheus: openshift-user-workload-monitoring/custom
+      match_re:
+        exported_namespace: ^openshift$
+    - receiver: slack
+      match:
+        exported_namespace: ""
+        prometheus: openshift-user-workload-monitoring/custom
+      match_re:
+        namespace: ^openshift$
+    - receiver: slack
+      match:
+        prometheus: openshift-user-workload-monitoring/custom
+      match_re:
+        exported_namespace: ^openshift-cluster-version$
+    - receiver: slack
+      match:
+        exported_namespace: ""
+        prometheus: openshift-user-workload-monitoring/custom
+      match_re:
+        namespace: ^openshift-cluster-version$
+    - receiver: slack
+      match:
+        prometheus: openshift-user-workload-monitoring/custom
+      match_re:
+        exported_namespace: ^goalert$
+    - receiver: slack
+      match:
+        exported_namespace: ""
+        prometheus: openshift-user-workload-monitoring/custom
+      match_re:
+        namespace: ^goalert$
+    - receiver: slack
+      match:
+        prometheus: openshift-user-workload-monitoring/custom
+      match_re:
+        exported_namespace: ^keycloak$
+    - receiver: slack
+      match:
+        exported_namespace: ""
+        prometheus: openshift-user-workload-monitoring/custom
+      match_re:
+        namespace: ^keycloak$
+    - receiver: slack
+      match:
+        prometheus: openshift-user-workload-monitoring/custom
+      match_re:
+        exported_namespace: ^configure-goalert-operator$
+    - receiver: slack
+      match:
+        exported_namespace: ""
+        prometheus: openshift-user-workload-monitoring/custom
+      match_re:
+        namespace: ^configure-goalert-operator$
+    - receiver: slack
+      match:
+        prometheus: openshift-user-workload-monitoring/custom
+      match_re:
+        exported_namespace: ^kube-system$
+    - receiver: slack
+      match:
+        exported_namespace: ""
+        prometheus: openshift-user-workload-monitoring/custom
+      match_re:
+        namespace: ^kube-system$
+    - receiver: slack
+      match:
+        prometheus: openshift-user-workload-monitoring/custom
+      match_re:
+        exported_namespace: ^openshift-apiserver$
+    - receiver: slack
+      match:
+        exported_namespace: ""
+        prometheus: openshift-user-workload-monitoring/custom
+      match_re:
+        namespace: ^openshift-apiserver$
+    - receiver: slack
+      match:
+        prometheus: openshift-user-workload-monitoring/custom
+      match_re:
+        exported_namespace: ^openshift-apiserver-operator$
+    - receiver: slack
+      match:
+        exported_namespace: ""
+        prometheus: openshift-user-workload-monitoring/custom
+      match_re:
+        namespace: ^openshift-apiserver-operator$
+    - receiver: slack
+      match:
+        prometheus: openshift-user-workload-monitoring/custom
+      match_re:
+        exported_namespace: ^openshift-authentication$
+    - receiver: slack
+      match:
+        exported_namespace: ""
+        prometheus: openshift-user-workload-monitoring/custom
+      match_re:
+        namespace: ^openshift-authentication$
+    - receiver: slack
+      match:
+        prometheus: openshift-user-workload-monitoring/custom
+      match_re:
+        exported_namespace: ^openshift-authentication-operator$
+    - receiver: slack
+      match:
+        exported_namespace: ""
+        prometheus: openshift-user-workload-monitoring/custom
+      match_re:
+        namespace: ^openshift-authentication-operator$
+    - receiver: slack
+      match:
+        prometheus: openshift-user-workload-monitoring/custom
+      match_re:
+        exported_namespace: ^openshift-cloud-controller-manager$
+    - receiver: slack
+      match:
+        exported_namespace: ""
+        prometheus: openshift-user-workload-monitoring/custom
+      match_re:
+        namespace: ^openshift-cloud-controller-manager$
+    - receiver: slack
+      match:
+        prometheus: openshift-user-workload-monitoring/custom
+      match_re:
+        exported_namespace: ^openshift-cloud-controller-manager-operator$
+    - receiver: slack
+      match:
+        exported_namespace: ""
+        prometheus: openshift-user-workload-monitoring/custom
+      match_re:
+        namespace: ^openshift-cloud-controller-manager-operator$
+    - receiver: slack
+      match:
+        prometheus: openshift-user-workload-monitoring/custom
+      match_re:
+        exported_namespace: ^openshift-cloud-credential-operator$
+    - receiver: slack
+      match:
+        exported_namespace: ""
+        prometheus: openshift-user-workload-monitoring/custom
+      match_re:
+        namespace: ^openshift-cloud-credential-operator$
+    - receiver: slack
+      match:
+        prometheus: openshift-user-workload-monitoring/custom
+      match_re:
+        exported_namespace: ^openshift-cloud-network-config-controller$
+    - receiver: slack
+      match:
+        exported_namespace: ""
+        prometheus: openshift-user-workload-monitoring/custom
+      match_re:
+        namespace: ^openshift-cloud-network-config-controller$
+    - receiver: slack
+      match:
+        prometheus: openshift-user-workload-monitoring/custom
+      match_re:
+        exported_namespace: ^openshift-cluster-api$
+    - receiver: slack
+      match:
+        exported_namespace: ""
+        prometheus: openshift-user-workload-monitoring/custom
+      match_re:
+        namespace: ^openshift-cluster-api$
+    - receiver: slack
+      match:
+        prometheus: openshift-user-workload-monitoring/custom
+      match_re:
+        exported_namespace: ^openshift-cluster-csi-drivers$
+    - receiver: slack
+      match:
+        exported_namespace: ""
+        prometheus: openshift-user-workload-monitoring/custom
+      match_re:
+        namespace: ^openshift-cluster-csi-drivers$
+    - receiver: slack
+      match:
+        prometheus: openshift-user-workload-monitoring/custom
+      match_re:
+        exported_namespace: ^openshift-cluster-machine-approver$
+    - receiver: slack
+      match:
+        exported_namespace: ""
+        prometheus: openshift-user-workload-monitoring/custom
+      match_re:
+        namespace: ^openshift-cluster-machine-approver$
+    - receiver: slack
+      match:
+        prometheus: openshift-user-workload-monitoring/custom
+      match_re:
+        exported_namespace: ^openshift-cluster-node-tuning-operator$
+    - receiver: slack
+      match:
+        exported_namespace: ""
+        prometheus: openshift-user-workload-monitoring/custom
+      match_re:
+        namespace: ^openshift-cluster-node-tuning-operator$
+    - receiver: slack
+      match:
+        prometheus: openshift-user-workload-monitoring/custom
+      match_re:
+        exported_namespace: ^openshift-cluster-samples-operator$
+    - receiver: slack
+      match:
+        exported_namespace: ""
+        prometheus: openshift-user-workload-monitoring/custom
+      match_re:
+        namespace: ^openshift-cluster-samples-operator$
+    - receiver: slack
+      match:
+        prometheus: openshift-user-workload-monitoring/custom
+      match_re:
+        exported_namespace: ^openshift-cluster-storage-operator$
+    - receiver: slack
+      match:
+        exported_namespace: ""
+        prometheus: openshift-user-workload-monitoring/custom
+      match_re:
+        namespace: ^openshift-cluster-storage-operator$
+    - receiver: slack
+      match:
+        prometheus: openshift-user-workload-monitoring/custom
+      match_re:
+        exported_namespace: ^openshift-config$
+    - receiver: slack
+      match:
+        exported_namespace: ""
+        prometheus: openshift-user-workload-monitoring/custom
+      match_re:
+        namespace: ^openshift-config$
+    - receiver: slack
+      match:
+        prometheus: openshift-user-workload-monitoring/custom
+      match_re:
+        exported_namespace: ^openshift-config-managed$
+    - receiver: slack
+      match:
+        exported_namespace: ""
+        prometheus: openshift-user-workload-monitoring/custom
+      match_re:
+        namespace: ^openshift-config-managed$
+    - receiver: slack
+      match:
+        prometheus: openshift-user-workload-monitoring/custom
+      match_re:
+        exported_namespace: ^openshift-config-operator$
+    - receiver: slack
+      match:
+        exported_namespace: ""
+        prometheus: openshift-user-workload-monitoring/custom
+      match_re:
+        namespace: ^openshift-config-operator$
+    - receiver: slack
+      match:
+        prometheus: openshift-user-workload-monitoring/custom
+      match_re:
+        exported_namespace: ^openshift-console$
+    - receiver: slack
+      match:
+        exported_namespace: ""
+        prometheus: openshift-user-workload-monitoring/custom
+      match_re:
+        namespace: ^openshift-console$
+    - receiver: slack
+      match:
+        prometheus: openshift-user-workload-monitoring/custom
+      match_re:
+        exported_namespace: ^openshift-console-operator$
+    - receiver: slack
+      match:
+        exported_namespace: ""
+        prometheus: openshift-user-workload-monitoring/custom
+      match_re:
+        namespace: ^openshift-console-operator$
+    - receiver: slack
+      match:
+        prometheus: openshift-user-workload-monitoring/custom
+      match_re:
+        exported_namespace: ^openshift-console-user-settings$
+    - receiver: slack
+      match:
+        exported_namespace: ""
+        prometheus: openshift-user-workload-monitoring/custom
+      match_re:
+        namespace: ^openshift-console-user-settings$
+    - receiver: slack
+      match:
+        prometheus: openshift-user-workload-monitoring/custom
+      match_re:
+        exported_namespace: ^openshift-controller-manager$
+    - receiver: slack
+      match:
+        exported_namespace: ""
+        prometheus: openshift-user-workload-monitoring/custom
+      match_re:
+        namespace: ^openshift-controller-manager$
+    - receiver: slack
+      match:
+        prometheus: openshift-user-workload-monitoring/custom
+      match_re:
+        exported_namespace: ^openshift-controller-manager-operator$
+    - receiver: slack
+      match:
+        exported_namespace: ""
+        prometheus: openshift-user-workload-monitoring/custom
+      match_re:
+        namespace: ^openshift-controller-manager-operator$
+    - receiver: slack
+      match:
+        prometheus: openshift-user-workload-monitoring/custom
+      match_re:
+        exported_namespace: ^openshift-dns$
+    - receiver: slack
+      match:
+        exported_namespace: ""
+        prometheus: openshift-user-workload-monitoring/custom
+      match_re:
+        namespace: ^openshift-dns$
+    - receiver: slack
+      match:
+        prometheus: openshift-user-workload-monitoring/custom
+      match_re:
+        exported_namespace: ^openshift-dns-operator$
+    - receiver: slack
+      match:
+        exported_namespace: ""
+        prometheus: openshift-user-workload-monitoring/custom
+      match_re:
+        namespace: ^openshift-dns-operator$
+    - receiver: slack
+      match:
+        prometheus: openshift-user-workload-monitoring/custom
+      match_re:
+        exported_namespace: ^openshift-etcd$
+    - receiver: slack
+      match:
+        exported_namespace: ""
+        prometheus: openshift-user-workload-monitoring/custom
+      match_re:
+        namespace: ^openshift-etcd$
+    - receiver: slack
+      match:
+        prometheus: openshift-user-workload-monitoring/custom
+      match_re:
+        exported_namespace: ^openshift-etcd-operator$
+    - receiver: slack
+      match:
+        exported_namespace: ""
+        prometheus: openshift-user-workload-monitoring/custom
+      match_re:
+        namespace: ^openshift-etcd-operator$
+    - receiver: slack
+      match:
+        prometheus: openshift-user-workload-monitoring/custom
+      match_re:
+        exported_namespace: ^openshift-host-network$
+    - receiver: slack
+      match:
+        exported_namespace: ""
+        prometheus: openshift-user-workload-monitoring/custom
+      match_re:
+        namespace: ^openshift-host-network$
+    - receiver: slack
+      match:
+        prometheus: openshift-user-workload-monitoring/custom
+      match_re:
+        exported_namespace: ^openshift-image-registry$
+    - receiver: slack
+      match:
+        exported_namespace: ""
+        prometheus: openshift-user-workload-monitoring/custom
+      match_re:
+        namespace: ^openshift-image-registry$
+    - receiver: slack
+      match:
+        prometheus: openshift-user-workload-monitoring/custom
+      match_re:
+        exported_namespace: ^openshift-ingress$
+    - receiver: slack
+      match:
+        exported_namespace: ""
+        prometheus: openshift-user-workload-monitoring/custom
+      match_re:
+        namespace: ^openshift-ingress$
+    - receiver: slack
+      match:
+        prometheus: openshift-user-workload-monitoring/custom
+      match_re:
+        exported_namespace: ^openshift-ingress-canary$
+    - receiver: slack
+      match:
+        exported_namespace: ""
+        prometheus: openshift-user-workload-monitoring/custom
+      match_re:
+        namespace: ^openshift-ingress-canary$
+    - receiver: slack
+      match:
+        prometheus: openshift-user-workload-monitoring/custom
+      match_re:
+        exported_namespace: ^openshift-ingress-operator$
+    - receiver: slack
+      match:
+        exported_namespace: ""
+        prometheus: openshift-user-workload-monitoring/custom
+      match_re:
+        namespace: ^openshift-ingress-operator$
+    - receiver: slack
+      match:
+        prometheus: openshift-user-workload-monitoring/custom
+      match_re:
+        exported_namespace: ^openshift-insights$
+    - receiver: slack
+      match:
+        exported_namespace: ""
+        prometheus: openshift-user-workload-monitoring/custom
+      match_re:
+        namespace: ^openshift-insights$
+    - receiver: slack
+      match:
+        prometheus: openshift-user-workload-monitoring/custom
+      match_re:
+        exported_namespace: ^openshift-kni-infra$
+    - receiver: slack
+      match:
+        exported_namespace: ""
+        prometheus: openshift-user-workload-monitoring/custom
+      match_re:
+        namespace: ^openshift-kni-infra$
+    - receiver: slack
+      match:
+        prometheus: openshift-user-workload-monitoring/custom
+      match_re:
+        exported_namespace: ^openshift-kube-apiserver$
+    - receiver: slack
+      match:
+        exported_namespace: ""
+        prometheus: openshift-user-workload-monitoring/custom
+      match_re:
+        namespace: ^openshift-kube-apiserver$
+    - receiver: slack
+      match:
+        prometheus: openshift-user-workload-monitoring/custom
+      match_re:
+        exported_namespace: ^openshift-kube-apiserver-operator$
+    - receiver: slack
+      match:
+        exported_namespace: ""
+        prometheus: openshift-user-workload-monitoring/custom
+      match_re:
+        namespace: ^openshift-kube-apiserver-operator$
+    - receiver: slack
+      match:
+        prometheus: openshift-user-workload-monitoring/custom
+      match_re:
+        exported_namespace: ^openshift-kube-controller-manager$
+    - receiver: slack
+      match:
+        exported_namespace: ""
+        prometheus: openshift-user-workload-monitoring/custom
+      match_re:
+        namespace: ^openshift-kube-controller-manager$
+    - receiver: slack
+      match:
+        prometheus: openshift-user-workload-monitoring/custom
+      match_re:
+        exported_namespace: ^openshift-kube-controller-manager-operator$
+    - receiver: slack
+      match:
+        exported_namespace: ""
+        prometheus: openshift-user-workload-monitoring/custom
+      match_re:
+        namespace: ^openshift-kube-controller-manager-operator$
+    - receiver: slack
+      match:
+        prometheus: openshift-user-workload-monitoring/custom
+      match_re:
+        exported_namespace: ^openshift-kube-scheduler$
+    - receiver: slack
+      match:
+        exported_namespace: ""
+        prometheus: openshift-user-workload-monitoring/custom
+      match_re:
+        namespace: ^openshift-kube-scheduler$
+    - receiver: slack
+      match:
+        prometheus: openshift-user-workload-monitoring/custom
+      match_re:
+        exported_namespace: ^openshift-kube-scheduler-operator$
+    - receiver: slack
+      match:
+        exported_namespace: ""
+        prometheus: openshift-user-workload-monitoring/custom
+      match_re:
+        namespace: ^openshift-kube-scheduler-operator$
+    - receiver: slack
+      match:
+        prometheus: openshift-user-workload-monitoring/custom
+      match_re:
+        exported_namespace: ^openshift-kube-storage-version-migrator$
+    - receiver: slack
+      match:
+        exported_namespace: ""
+        prometheus: openshift-user-workload-monitoring/custom
+      match_re:
+        namespace: ^openshift-kube-storage-version-migrator$
+    - receiver: slack
+      match:
+        prometheus: openshift-user-workload-monitoring/custom
+      match_re:
+        exported_namespace: ^openshift-kube-storage-version-migrator-operator$
+    - receiver: slack
+      match:
+        exported_namespace: ""
+        prometheus: openshift-user-workload-monitoring/custom
+      match_re:
+        namespace: ^openshift-kube-storage-version-migrator-operator$
+    - receiver: slack
+      match:
+        prometheus: openshift-user-workload-monitoring/custom
+      match_re:
+        exported_namespace: ^openshift-machine-api$
+    - receiver: slack
+      match:
+        exported_namespace: ""
+        prometheus: openshift-user-workload-monitoring/custom
+      match_re:
+        namespace: ^openshift-machine-api$
+    - receiver: slack
+      match:
+        prometheus: openshift-user-workload-monitoring/custom
+      match_re:
+        exported_namespace: ^openshift-machine-config-operator$
+    - receiver: slack
+      match:
+        exported_namespace: ""
+        prometheus: openshift-user-workload-monitoring/custom
+      match_re:
+        namespace: ^openshift-machine-config-operator$
+    - receiver: slack
+      match:
+        prometheus: openshift-user-workload-monitoring/custom
+      match_re:
+        exported_namespace: ^openshift-marketplace$
+    - receiver: slack
+      match:
+        exported_namespace: ""
+        prometheus: openshift-user-workload-monitoring/custom
+      match_re:
+        namespace: ^openshift-marketplace$
+    - receiver: slack
+      match:
+        prometheus: openshift-user-workload-monitoring/custom
+      match_re:
+        exported_namespace: ^openshift-monitoring$
+    - receiver: slack
+      match:
+        exported_namespace: ""
+        prometheus: openshift-user-workload-monitoring/custom
+      match_re:
+        namespace: ^openshift-monitoring$
+    - receiver: slack
+      match:
+        prometheus: openshift-user-workload-monitoring/custom
+      match_re:
+        exported_namespace: ^openshift-multus$
+    - receiver: slack
+      match:
+        exported_namespace: ""
+        prometheus: openshift-user-workload-monitoring/custom
+      match_re:
+        namespace: ^openshift-multus$
+    - receiver: slack
+      match:
+        prometheus: openshift-user-workload-monitoring/custom
+      match_re:
+        exported_namespace: ^openshift-network-diagnostics$
+    - receiver: slack
+      match:
+        exported_namespace: ""
+        prometheus: openshift-user-workload-monitoring/custom
+      match_re:
+        namespace: ^openshift-network-diagnostics$
+    - receiver: slack
+      match:
+        prometheus: openshift-user-workload-monitoring/custom
+      match_re:
+        exported_namespace: ^openshift-network-operator$
+    - receiver: slack
+      match:
+        exported_namespace: ""
+        prometheus: openshift-user-workload-monitoring/custom
+      match_re:
+        namespace: ^openshift-network-operator$
+    - receiver: slack
+      match:
+        prometheus: openshift-user-workload-monitoring/custom
+      match_re:
+        exported_namespace: ^openshift-nutanix-infra$
+    - receiver: slack
+      match:
+        exported_namespace: ""
+        prometheus: openshift-user-workload-monitoring/custom
+      match_re:
+        namespace: ^openshift-nutanix-infra$
+    - receiver: slack
+      match:
+        prometheus: openshift-user-workload-monitoring/custom
+      match_re:
+        exported_namespace: ^openshift-oauth-apiserver$
+    - receiver: slack
+      match:
+        exported_namespace: ""
+        prometheus: openshift-user-workload-monitoring/custom
+      match_re:
+        namespace: ^openshift-oauth-apiserver$
+    - receiver: slack
+      match:
+        prometheus: openshift-user-workload-monitoring/custom
+      match_re:
+        exported_namespace: ^openshift-openstack-infra$
+    - receiver: slack
+      match:
+        exported_namespace: ""
+        prometheus: openshift-user-workload-monitoring/custom
+      match_re:
+        namespace: ^openshift-openstack-infra$
+    - receiver: slack
+      match:
+        prometheus: openshift-user-workload-monitoring/custom
+      match_re:
+        exported_namespace: ^openshift-operator-lifecycle-manager$
+    - receiver: slack
+      match:
+        exported_namespace: ""
+        prometheus: openshift-user-workload-monitoring/custom
+      match_re:
+        namespace: ^openshift-operator-lifecycle-manager$
+    - receiver: slack
+      match:
+        prometheus: openshift-user-workload-monitoring/custom
+      match_re:
+        exported_namespace: ^openshift-operators$
+    - receiver: slack
+      match:
+        exported_namespace: ""
+        prometheus: openshift-user-workload-monitoring/custom
+      match_re:
+        namespace: ^openshift-operators$
+    - receiver: slack
+      match:
+        prometheus: openshift-user-workload-monitoring/custom
+      match_re:
+        exported_namespace: ^openshift-ovirt-infra$
+    - receiver: slack
+      match:
+        exported_namespace: ""
+        prometheus: openshift-user-workload-monitoring/custom
+      match_re:
+        namespace: ^openshift-ovirt-infra$
+    - receiver: slack
+      match:
+        prometheus: openshift-user-workload-monitoring/custom
+      match_re:
+        exported_namespace: ^openshift-sdn$
+    - receiver: slack
+      match:
+        exported_namespace: ""
+        prometheus: openshift-user-workload-monitoring/custom
+      match_re:
+        namespace: ^openshift-sdn$
+    - receiver: slack
+      match:
+        prometheus: openshift-user-workload-monitoring/custom
+      match_re:
+        exported_namespace: ^openshift-ovn-kubernetes$
+    - receiver: slack
+      match:
+        exported_namespace: ""
+        prometheus: openshift-user-workload-monitoring/custom
+      match_re:
+        namespace: ^openshift-ovn-kubernetes$
+    - receiver: slack
+      match:
+        prometheus: openshift-user-workload-monitoring/custom
+      match_re:
+        exported_namespace: ^openshift-platform-operators$
+    - receiver: slack
+      match:
+        exported_namespace: ""
+        prometheus: openshift-user-workload-monitoring/custom
+      match_re:
+        namespace: ^openshift-platform-operators$
+    - receiver: slack
+      match:
+        prometheus: openshift-user-workload-monitoring/custom
+      match_re:
+        exported_namespace: ^openshift-route-controller-manager$
+    - receiver: slack
+      match:
+        exported_namespace: ""
+        prometheus: openshift-user-workload-monitoring/custom
+      match_re:
+        namespace: ^openshift-route-controller-manager$
+    - receiver: slack
+      match:
+        prometheus: openshift-user-workload-monitoring/custom
+      match_re:
+        exported_namespace: ^openshift-service-ca$
+    - receiver: slack
+      match:
+        exported_namespace: ""
+        prometheus: openshift-user-workload-monitoring/custom
+      match_re:
+        namespace: ^openshift-service-ca$
+    - receiver: slack
+      match:
+        prometheus: openshift-user-workload-monitoring/custom
+      match_re:
+        exported_namespace: ^openshift-service-ca-operator$
+    - receiver: slack
+      match:
+        exported_namespace: ""
+        prometheus: openshift-user-workload-monitoring/custom
+      match_re:
+        namespace: ^openshift-service-ca-operator$
+    - receiver: slack
+      match:
+        prometheus: openshift-user-workload-monitoring/custom
+      match_re:
+        exported_namespace: ^openshift-user-workload-monitoring$
+    - receiver: slack
+      match:
+        exported_namespace: ""
+        prometheus: openshift-user-workload-monitoring/custom
+      match_re:
+        namespace: ^openshift-user-workload-monitoring$
+    - receiver: slack
+      match:
+        prometheus: openshift-user-workload-monitoring/custom
+      match_re:
+        exported_namespace: ^openshift-vsphere-infra$
+    - receiver: slack
+      match:
+        exported_namespace: ""
+        prometheus: openshift-user-workload-monitoring/custom
+      match_re:
+        namespace: ^openshift-vsphere-infra$
+  group_wait: 30s
+  group_interval: 5m
+  repeat_interval: 12h
+receivers:
+- name: "null"
+- name: slack
+  slack_configs:
+    - channel: "#test"
+      send_resolved: true
+templates: []
+inhibit_rules:
+- target_match_re:
+    severity: warning|info
+  source_match:
+    severity: critical
+  equal:
+  - namespace
+  - alertname
+- target_match_re:
+    severity: info
+  source_match:
+    severity: warning
+  equal:
+  - namespace
+  - alertname
+- target_match_re:
+    alertname: ClusterOperatorDown
+  source_match:
+    alertname: ClusterOperatorDegraded
+    severity: critical
+  equal:
+  - namespace
+  - name
+- target_match_re:
+    alertname: KubeNodeUnreachable
+  source_match:
+    alertname: KubeNodeNotReady
+  equal:
+  - node
+  - instance
+- target_match_re:
+    alertname: SDNPodNotReady|TargetDown
+  source_match:
+    alertname: KubeNodeUnreachable
+- target_match_re:
+    alertname: KubeDaemonSetRolloutStuck|KubeDaemonSetMisScheduled|KubeDeploymentReplicasMismatch|KubeStatefulSetReplicasMismatch|KubePodNotReady
+  source_match:
+    alertname: KubeNodeNotReady
+  equal:
+  - instance
+- target_match_re:
+    alertname: KubePodNotReady|KubePodCrashLooping
+  source_match:
+    alertname: KubeDeploymentReplicasMismatch
+  equal:
+  - namespace
+- target_match_re:
+    alertname: ElasticsearchClusterNotHealthy
+  source_match:
+    alertname: ElasticsearchOperatorCSVNotSuccessful
+  equal:
+  - dummylabel
+- target_match_re:
+    alertname: api-ErrorBudgetBurn
+  source_match:
+    alertname: KubeAPIErrorBudgetBurn
+  equal:
+  - severity

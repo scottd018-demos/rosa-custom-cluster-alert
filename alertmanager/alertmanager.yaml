@@ -1,0 +1,424 @@
+#
+# alertmanager configurations
+#
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: alertmanager-kube-rbac-proxy-custom
+  namespace: openshift-user-workload-monitoring
+  labels:
+    app.kubernetes.io/managed-by: cluster-monitoring-operator
+    app.kubernetes.io/name: alertmanager-custom
+    app.kubernetes.io/part-of: custom-monitoring
+type: Opaque
+stringData:
+  config.yaml: |
+    "authorization":
+      "resourceAttributes":
+        "apiGroup": "monitoring.coreos.com"
+        "namespace": "{{ .Value }}"
+        "resource": "prometheusrules"
+      "rewrites":
+        "byQueryParameter":
+          "name": "namespace"
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: alertmanager-kube-rbac-proxy-metric-custom
+  namespace: openshift-user-workload-monitoring
+  labels:
+    app.kubernetes.io/managed-by: cluster-monitoring-operator
+    app.kubernetes.io/name: alertmanager-custom
+    app.kubernetes.io/part-of: custom-monitoring
+type: Opaque
+stringData:
+  config.yaml: |
+    "authorization":
+      "static":
+      - "path": "/metrics"
+        "resourceRequest": false
+        "user":
+          "name": "system:serviceaccount:openshift-user-workload-monitoring:prometheus-custom"
+        "verb": "get"
+
+#
+# alertmanager rbac
+#
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: alertmanager-custom
+  namespace: openshift-user-workload-monitoring
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  labels:
+    app.kubernetes.io/managed-by: cluster-monitoring-operator
+    app.kubernetes.io/part-of: custom-monitoring
+  name: alertmanager-custom
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: alertmanager-main
+subjects:
+  - kind: ServiceAccount
+    name: alertmanager-custom
+    namespace: openshift-user-workload-monitoring
+---
+apiVersion: security.openshift.io/v1
+kind: SecurityContextConstraints
+metadata:
+  name: alertmanager-custom
+allowHostDirVolumePlugin: false
+allowHostIPC: false
+allowHostNetwork: false
+allowHostPID: false
+allowHostPorts: false
+allowPrivilegedContainer: false
+allowPrivilegeEscalation: false
+fsGroup:
+  type: RunAsAny
+users:
+  - system:serviceaccount:openshift-user-workload-monitoring:alertmanager-custom
+readOnlyRootFilesystem: true
+runAsUser:
+  type: RunAsAny
+seLinuxContext:
+  type: MustRunAs
+supplementalGroups:
+  type: RunAsAny
+volumes:
+  - "*"
+
+#
+# alertmanager app
+#   NOTE: annotations on service will create a special secret for the service to use
+#
+---
+apiVersion: v1
+kind: Service
+metadata:
+  annotations:
+    service.beta.openshift.io/serving-cert-secret-name: alertmanager-custom-tls
+  labels:
+    app.kubernetes.io/component: alert-router
+    app.kubernetes.io/instance: custom
+    app.kubernetes.io/managed-by: cluster-monitoring-operator
+    app.kubernetes.io/name: alertmanager
+    app.kubernetes.io/part-of: custom-monitoring
+    app.kubernetes.io/version: 0.25.0
+  name: alertmanager-custom
+  namespace: openshift-user-workload-monitoring
+spec:
+  internalTrafficPolicy: Cluster
+  ipFamilies:
+    - IPv4
+  ipFamilyPolicy: SingleStack
+  ports:
+    - name: web
+      port: 9094
+      protocol: TCP
+      targetPort: web
+    - name: tenancy
+      port: 9092
+      protocol: TCP
+      targetPort: tenancy
+    - name: metrics
+      port: 9097
+      protocol: TCP
+      targetPort: metrics
+  selector:
+    app.kubernetes.io/component: alert-router
+    app.kubernetes.io/instance: custom
+    app.kubernetes.io/name: alertmanager
+    app.kubernetes.io/part-of: custom-monitoring
+  sessionAffinity: ClientIP
+  sessionAffinityConfig:
+    clientIP:
+      timeoutSeconds: 10800
+  type: ClusterIP
+---
+apiVersion: monitoring.coreos.com/v1
+kind: Alertmanager
+metadata:
+  labels:
+    app.kubernetes.io/component: alert-router
+    app.kubernetes.io/instance: custom
+    app.kubernetes.io/managed-by: cluster-monitoring-operator
+    app.kubernetes.io/name: alertmanager
+    app.kubernetes.io/part-of: openshift-user-workload-monitoring
+    app.kubernetes.io/version: 0.25.0
+  name: custom
+  namespace: openshift-user-workload-monitoring
+spec:
+  #
+  # kubenetes pod config
+  #
+  affinity:
+    podAntiAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+      - labelSelector:
+          matchLabels:
+            app.kubernetes.io/component: alert-router
+            app.kubernetes.io/instance: custom
+            app.kubernetes.io/name: alertmanager
+            app.kubernetes.io/part-of: custom-monitoring
+        namespaces:
+          - openshift-user-workload-monitoring
+        topologyKey: kubernetes.io/hostname
+  podMetadata:
+    annotations:
+      target.workload.openshift.io/management: '{"effect": "PreferredDuringScheduling"}'
+    labels:
+      app.kubernetes.io/component: alert-router
+      app.kubernetes.io/instance: custom
+      app.kubernetes.io/name: alertmanager
+      app.kubernetes.io/part-of: custom-monitoring
+      app.kubernetes.io/version: 0.25.0
+  image: quay.io/openshift-release-dev/ocp-v4.0-art-dev@sha256:3919dc73374ee0c497600869e5d6ca4ccf5f2a1a36516548567e88d4790b957c
+  nodeSelector:
+    kubernetes.io/os: linux
+  replicas: 2
+  resources:
+    requests:
+      cpu: 4m
+      memory: 40Mi
+  securityContext:
+    fsGroup: 65534
+    runAsNonRoot: true
+    runAsUser: 65534
+  serviceAccountName: alertmanager-custom
+
+  #
+  # alertmanager config
+  #
+  logLevel: debug
+  retention: 120h
+  alertmanagerConfigMatcherStrategy:
+    type: OnNamespace
+  version: v0.25.0
+  portName: web
+  listenLocal: true
+  # externalUrl: https://console-openshift-console.apps.dscott.sw4j.p1.openshiftapps.com/monitoring
+  web:
+    httpConfig:
+      headers:
+        contentSecurityPolicy: frame-ancestors 'none'
+
+  #
+  # volumes
+  #
+  volumes:
+    - configMap:
+        name: metrics-client-ca
+      name: metrics-client-ca
+    - configMap:
+        items:
+          - key: ca-bundle.crt
+            path: tls-ca-bundle.pem
+        name: alertmanager-trusted-ca-bundle
+        optional: true
+      name: alertmanager-trusted-ca-bundle
+  volumeMounts:
+    - mountPath: /etc/pki/ca-trust/extracted/pem/
+      name: alertmanager-trusted-ca-bundle
+      readOnly: true
+  storage:
+    volumeClaimTemplate:
+      metadata:
+        name: alertmanager-data
+      spec:
+        resources:
+          requests:
+            storage: 10Gi
+      status: {}
+  secrets:
+    - alertmanager-custom-tls
+    - alertmanager-main-proxy
+    - alertmanager-kube-rbac-proxy-custom
+    - alertmanager-kube-rbac-proxy-metric-custom  
+
+  #
+  # containers
+  #
+  containers:
+    #
+    # alertmanager
+    #
+    - name: alertmanager
+      resources: {}
+      startupProbe:
+        exec:
+          command:
+          - sh
+          - -c
+          - exec curl --fail http://localhost:9093/-/ready
+        failureThreshold: 40
+        initialDelaySeconds: 20
+        periodSeconds: 10
+        timeoutSeconds: 3
+
+    #
+    # alertmanager-proxy
+    #
+    - args:
+        - -provider=openshift
+        - -https-address=:9095
+        - -http-address=
+        - -email-domain=*
+        - -upstream=http://localhost:9093
+        - '-openshift-sar=[{"resource": "namespaces", "verb": "get"}, {"resource": "alertmanagers",
+          "resourceAPIGroup": "monitoring.coreos.com", "namespace": "openshift-user-workload-monitoring",
+          "verb": "patch", "resourceName": "non-existant"}]'
+        - '-openshift-delegate-urls={"/": {"resource": "namespaces", "verb": "get"}, "/":
+          {"resource":"alertmanagers", "group": "monitoring.coreos.com", "namespace":
+          "openshift-user-workload-monitoring", "verb": "patch", "name": "non-existant"}}'
+        - -tls-cert=/etc/tls/private/tls.crt
+        - -tls-key=/etc/tls/private/tls.key
+        - -client-secret-file=/var/run/secrets/kubernetes.io/serviceaccount/token
+        - -cookie-secret-file=/etc/proxy/secrets/session_secret
+        - -openshift-service-account=alertmanager-custom
+        - -openshift-ca=/etc/pki/tls/cert.pem
+        - -openshift-ca=/var/run/secrets/kubernetes.io/serviceaccount/ca.crt
+      env:
+        - name: HTTP_PROXY
+        - name: HTTPS_PROXY
+        - name: NO_PROXY
+      image: quay.io/openshift-release-dev/ocp-v4.0-art-dev@sha256:b4d89810d0cd2cd0b24d2f6b1febbc68b8a2a18277a4362a2d2fa1a792c5abaf
+      name: alertmanager-proxy
+      ports:
+        - containerPort: 9095
+          name: web
+          protocol: TCP
+      resources:
+        requests:
+          cpu: 1m
+          memory: 20Mi
+      terminationMessagePolicy: FallbackToLogsOnError
+      volumeMounts:
+        - mountPath: /etc/tls/private
+          name: secret-alertmanager-custom-tls
+        - mountPath: /etc/proxy/secrets
+          name: secret-alertmanager-main-proxy
+        - mountPath: /etc/pki/ca-trust/extracted/pem/
+          name: alertmanager-trusted-ca-bundle
+          readOnly: true
+
+    #
+    # kube-rbac-proxy
+    #
+    - args:
+      - --secure-listen-address=0.0.0.0:9092
+      - --upstream=http://127.0.0.1:9096
+      - --config-file=/etc/kube-rbac-proxy/config.yaml
+      - --tls-cert-file=/etc/tls/private/tls.crt
+      - --tls-private-key-file=/etc/tls/private/tls.key
+      - --tls-cipher-suites=TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305_SHA256,TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305_SHA256
+      - --logtostderr=true
+      - --tls-min-version=VersionTLS12
+      image: quay.io/openshift-release-dev/ocp-v4.0-art-dev@sha256:becb75a3f75a03809d5a9fca553dc4194ce22b787104301337af2c4d2fe5da8e
+      name: kube-rbac-proxy
+      ports:
+        - containerPort: 9092
+          name: tenancy
+          protocol: TCP
+      resources:
+        requests:
+          cpu: 1m
+          memory: 15Mi
+      terminationMessagePolicy: FallbackToLogsOnError
+      volumeMounts:
+        - mountPath: /etc/kube-rbac-proxy
+          name: secret-alertmanager-kube-rbac-proxy-custom
+        - mountPath: /etc/tls/private
+          name: secret-alertmanager-custom-tls
+
+    #
+    # kube-rbac-proxy-metric
+    #
+    - args:
+        - --secure-listen-address=0.0.0.0:9097
+        - --upstream=http://127.0.0.1:9093
+        - --config-file=/etc/kube-rbac-proxy/config.yaml
+        - --tls-cert-file=/etc/tls/private/tls.crt
+        - --tls-private-key-file=/etc/tls/private/tls.key
+        - --tls-cipher-suites=TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305_SHA256,TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305_SHA256
+        - --client-ca-file=/etc/tls/client/client-ca.crt
+        - --logtostderr=true
+        - --allow-paths=/metrics
+        - --tls-min-version=VersionTLS12
+      image: quay.io/openshift-release-dev/ocp-v4.0-art-dev@sha256:becb75a3f75a03809d5a9fca553dc4194ce22b787104301337af2c4d2fe5da8e
+      name: kube-rbac-proxy-metric
+      ports:
+        - containerPort: 9097
+          name: metrics
+          protocol: TCP
+      resources:
+        requests:
+          cpu: 1m
+          memory: 15Mi
+      terminationMessagePolicy: FallbackToLogsOnError
+      volumeMounts:
+        - mountPath: /etc/kube-rbac-proxy
+          name: secret-alertmanager-kube-rbac-proxy-metric-custom
+          readOnly: true
+        - mountPath: /etc/tls/private
+          name: secret-alertmanager-custom-tls
+          readOnly: true
+        - mountPath: /etc/tls/client
+          name: metrics-client-ca
+          readOnly: true
+
+    #
+    # prom-label-proxy
+    #
+    - args:
+      - --insecure-listen-address=127.0.0.1:9096
+      - --upstream=http://127.0.0.1:9093
+      - --label=namespace
+      - --error-on-replace
+      image: quay.io/openshift-release-dev/ocp-v4.0-art-dev@sha256:bd9cee633e2595a1a7279c4fbf3964b13f3f8e1fd9df557fcc5b32bd01a51fa5
+      name: prom-label-proxy
+      resources:
+        requests:
+          cpu: 1m
+          memory: 20Mi
+      terminationMessagePolicy: FallbackToLogsOnError
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  labels:
+    app.kubernetes.io/component: alert-router
+    app.kubernetes.io/instance: custom
+    app.kubernetes.io/managed-by: cluster-monitoring-operator
+    app.kubernetes.io/name: alertmanager
+    app.kubernetes.io/part-of: custom-monitoring
+    app.kubernetes.io/version: 0.25.0
+  name: alertmanager-custom
+  namespace: openshift-user-workload-monitoring
+spec:
+  endpoints:
+    - bearerTokenSecret:
+        key: ""
+      interval: 30s
+      port: metrics
+      scheme: https
+      tlsConfig:
+        ca: {}
+        caFile: /etc/prometheus/configmaps/serving-certs-ca-bundle/service-ca.crt
+        cert: {}
+        certFile: /etc/prometheus/secrets/metrics-client-certs/tls.crt
+        keyFile: /etc/prometheus/secrets/metrics-client-certs/tls.key
+        serverName: alertmanager-custom.openshift-user-workload-monitoring.svc
+  namespaceSelector: {}
+  selector:
+    matchLabels:
+      app.kubernetes.io/component: alert-router
+      app.kubernetes.io/instance: custom
+      app.kubernetes.io/name: alertmanager
+      app.kubernetes.io/part-of: custom-monitoring
